@@ -1,0 +1,378 @@
+<div class="db">
+
+  <!-- ── HEADER ── -->
+  <div class="db-header">
+    <div>
+      <h1 class="db-title">{{ getGreeting() }}, {{ firstName }} </h1>
+      <p class="db-sub">{{ today }}</p>
+    </div>
+
+  </div>
+
+  <!-- ── KPI ROW (inchangée) ── -->
+  <div class="db-kpis">
+
+    <div class="db-kpi" (click)="goCandidatures.emit()">
+      <div class="db-kpi-label-row">
+        <span class="db-kpi-l">Candidatures</span>
+        <div class="db-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+      </div>
+      <span class="db-kpi-n">{{ candidaturesCount }}</span>
+      <div class="db-tags-row">
+        <span class="db-tag wait">{{ candidaturesEnAttente }} en attente</span>
+        <span class="db-tag ok">{{ candidaturesAcceptees }} acceptées</span>
+        <span class="db-tag no">{{ candidaturesRefusees }} refusées</span>
+      </div>
+    </div>
+
+    <div class="db-kpi">
+      <div class="db-kpi-label-row">
+        <span class="db-kpi-l">Stagiaires</span>
+        <div class="db-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+      </div>
+      <span class="db-kpi-n">{{ totalStagiaires }}</span>
+      <div class="db-tags-row">
+        <span class="db-tag blue">inscrits</span>
+      </div>
+    </div>
+
+    <div class="db-kpi" (click)="goList.emit()">
+      <div class="db-kpi-label-row">
+        <span class="db-kpi-l">Offres publiées</span>
+        <div class="db-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+      </div>
+      <span class="db-kpi-n">{{ totalOffres }}</span>
+      <div class="db-tags-row">
+        <span class="db-tag orange">{{ disponiblesCount }} ouvertes</span>
+      </div>
+    </div>
+
+    <div class="db-kpi">
+      <div class="db-kpi-label-row">
+        <span class="db-kpi-l">Encadrants</span>
+        <div class="db-kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+      </div>
+      <span class="db-kpi-n">{{ totalEncadrants }}</span>
+      <div class="db-tags-row">
+        <span class="db-tag green">actifs</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── ALERTES ACTIONS REQUISES ── -->
+  <div>
+    <p class="db-section-label">Actions requises</p>
+    <div class="db-card" style="margin-top:12px">
+      <div class="db-alerts">
+        <div class="db-alert warn" *ngIf="candidaturesEnAttente > 0">
+          <span class="db-alert-icon">⏳</span>
+          <span class="db-alert-text">Candidatures en attente de traitement</span>
+          <span class="db-alert-count">{{ candidaturesEnAttente }}</span>
+        </div>
+        <div class="db-alert info" *ngIf="entretiensPlanifies > 0">
+          <span class="db-alert-icon">📅</span>
+          <span class="db-alert-text">Entretiens planifiés cette semaine</span>
+          <span class="db-alert-count">{{ entretiensPlanifies }}</span>
+        </div>
+        <div class="db-alert danger" *ngIf="stagesTerminent > 0">
+          <span class="db-alert-icon">🏁</span>
+          <span class="db-alert-text">Stages se terminant dans les 30 jours</span>
+          <span class="db-alert-count">{{ stagesTerminent }}</span>
+        </div>
+        <p class="db-empty-sm" *ngIf="candidaturesEnAttente === 0 && entretiensPlanifies === 0 && stagesTerminent === 0">
+          Aucune action requise pour le moment ✓
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS ROW 1 : Candidatures par mois + Répartition statuts ── -->
+  <div>
+    <p class="db-section-label">Candidatures & statuts</p>
+    <div class="db-charts-grid" style="margin-top:12px">
+
+      <!-- Bar chart : candidatures par mois -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Candidatures par mois
+          </span>
+          <button class="db-link" (click)="goCandidatures.emit()">Voir tout →</button>
+        </div>
+        <div class="db-chart-wrap">
+          <canvas #barCandidatures id="barCandidatures"
+                  role="img"
+                  aria-label="Histogramme des candidatures reçues par mois"></canvas>
+        </div>
+        <div class="db-mini-stats">
+          <div class="db-mini-stat">
+            <span class="db-mini-stat-v accent">{{ tauxAcceptation }}%</span>
+            <span class="db-mini-stat-l">Taux acceptation</span>
+          </div>
+          <div class="db-mini-stat">
+            <span class="db-mini-stat-v">{{ tauxRefus }}%</span>
+            <span class="db-mini-stat-l">Taux refus</span>
+          </div>
+          <div class="db-mini-stat">
+            <span class="db-mini-stat-v">{{ ratioCandSujet }}</span>
+            <span class="db-mini-stat-l">Cand. / sujet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doughnut : répartition statuts -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Répartition des statuts
+          </span>
+        </div>
+        <div class="db-chart-wrap">
+          <canvas #doughnutStatuts id="doughnutStatuts"
+                  role="img"
+                  aria-label="Diagramme circulaire de répartition des candidatures par statut"></canvas>
+        </div>
+        <div class="db-legend">
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#F59E0B"></span>
+            En attente ({{ candidaturesEnAttente }})
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#16A34A"></span>
+            Acceptées ({{ candidaturesAcceptees }})
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#DC2626"></span>
+            Refusées ({{ candidaturesRefusees }})
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#3B82F6"></span>
+            En entretien ({{ candidaturesEnEntretien }})
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS ROW 2 : Score IA + Filières + Cycles ── -->
+  <div>
+    <p class="db-section-label">Analyse IA & répartition</p>
+    <div class="db-charts-grid-3" style="margin-top:12px">
+
+      <!-- Line chart : score IA moyen par mois -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Score IA moyen (par mois)
+          </span>
+        </div>
+        <div class="db-chart-wrap">
+          <canvas #lineScoreIA id="lineScoreIA"
+                  role="img"
+                  aria-label="Courbe d'évolution du score IA moyen des candidatures par mois"></canvas>
+        </div>
+        <div class="db-legend" style="margin-top:12px">
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#D4650A;border-radius:50%"></span>
+            Score moyen IA
+          </div>
+          <div class="db-legend-item">
+            <span class="db-legend-dot" style="background:#94A3B8;border-radius:50%"></span>
+            Seuil minimal (60)
+          </div>
+        </div>
+      </div>
+
+      <!-- Doughnut : par filière -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Par filière
+          </span>
+        </div>
+        <div class="db-chart-wrap-sm">
+          <canvas #doughnutFilieres id="doughnutFilieres"
+                  role="img"
+                  aria-label="Répartition des candidatures par filière"></canvas>
+        </div>
+        <div class="db-legend" style="margin-top:10px">
+          <div class="db-legend-item" *ngFor="let f of repartitionFilieres; let i = index">
+            <span class="db-legend-dot" [style.background]="filiereColors[i]"></span>
+            {{ f.nom }} ({{ f.pct }}%)
+          </div>
+        </div>
+      </div>
+
+      <!-- Doughnut : par cycle -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Par cycle
+          </span>
+        </div>
+        <div class="db-chart-wrap-sm">
+          <canvas #doughnutCycles id="doughnutCycles"
+                  role="img"
+                  aria-label="Répartition des candidatures par cycle d'études"></canvas>
+        </div>
+        <div class="db-legend" style="margin-top:10px">
+          <div class="db-legend-item" *ngFor="let c of repartitionCycles; let i = index">
+            <span class="db-legend-dot" [style.background]="cycleColors[i]"></span>
+            {{ c.nom }} ({{ c.pct }}%)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ROW 3 : Pipeline entretiens + Encadrants + Évaluations ── -->
+  <div>
+    <p class="db-section-label">Pipeline & suivi</p>
+    <div class="db-charts-grid" style="margin-top:12px">
+
+      <!-- Pipeline entretiens avec scores IA -->
+      <div class="db-card">
+        <div class="db-card-head">
+          <span class="db-card-title">
+            <span class="db-card-title-dot"></span>
+            Pipeline — candidats en entretien
+          </span>
+          <button class="db-link" (click)="goCandidatures.emit()">Voir tout →</button>
+        </div>
+        <div class="db-pipeline">
+          <div class="db-pipeline-row" *ngFor="let c of candidatsEnEntretien">
+            <div class="db-av db-pipeline-avatar" [style.background]="getAvatarColor(c.nom)">
+              {{ getInitials(c.nom) }}
+            </div>
+            <div class="db-pipeline-info">
+              <div class="db-pipeline-name">{{ c.nom }}</div>
+              <div class="db-pipeline-sub">{{ c.sujet }} · {{ c.dateEntretien | date:'dd MMM' }}</div>
+            </div>
+            <div class="db-pipeline-score">
+              <span class="db-score-badge" [ngClass]="getScoreClass(c.scoreIA)">
+                {{ c.scoreIA }}%
+              </span>
+              <span class="db-score-label">Score IA</span>
+            </div>
+          </div>
+          <p class="db-empty-sm" *ngIf="candidatsEnEntretien.length === 0">Aucun entretien en cours</p>
+        </div>
+      </div>
+
+      <!-- Encadrants + Évaluations moyenne stagiaires -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Encadrants les plus actifs -->
+        <div class="db-card">
+          <div class="db-card-head">
+            <span class="db-card-title">
+              <span class="db-card-title-dot"></span>
+              Encadrants actifs
+            </span>
+          </div>
+          <div class="db-enc-list">
+            <div class="db-enc-row" *ngFor="let e of topEncadrants; let i = index">
+              <span class="db-enc-pos">{{ i + 1 }}</span>
+              <div class="db-enc-av" [style.background]="getAvatarColor(e.nom)">
+                {{ getInitials(e.nom) }}
+              </div>
+              <span class="db-enc-name">{{ e.nom }}</span>
+              <div class="db-enc-bar-wrap">
+                <div class="db-enc-bar">
+                  <div class="db-enc-fill"
+                       [style.width.%]="topEncadrants[0].count > 0 ? (e.count / topEncadrants[0].count * 100) : 0">
+                  </div>
+                </div>
+                <span class="db-enc-n">{{ e.count }}</span>
+              </div>
+            </div>
+            <p class="db-empty-sm" *ngIf="topEncadrants.length === 0">Aucun encadrant</p>
+          </div>
+        </div>
+
+        <!-- Évaluation moyenne des stagiaires -->
+        <div class="db-card">
+          <div class="db-card-head">
+            <span class="db-card-title">
+              <span class="db-card-title-dot"></span>
+              Évaluations stagiaires
+            </span>
+          </div>
+          <div class="db-eval-grid">
+            <div class="db-eval-item" *ngFor="let ev of evaluationsMoyennes">
+              <div class="db-eval-label-row">
+                <span class="db-eval-label">{{ ev.critere }}</span>
+                <span class="db-eval-val">{{ ev.note }}/5</span>
+              </div>
+              <div class="db-eval-bar">
+                <div class="db-eval-fill"
+                     [style.width.%]="ev.note / 5 * 100"
+                     [style.background]="getEvalColor(ev.note)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHART : Évolution stages actifs ── -->
+  <div>
+    <p class="db-section-label">Suivi des stages</p>
+    <div class="db-card" style="margin-top:12px">
+      <div class="db-card-head">
+        <span class="db-card-title">
+          <span class="db-card-title-dot"></span>
+          Évolution des stages actifs & offres ouvertes
+        </span>
+      </div>
+      <div class="db-chart-wrap" style="height:200px">
+        <canvas #lineStages id="lineStages"
+                role="img"
+                aria-label="Courbe d'évolution du nombre de stages actifs et d'offres ouvertes sur l'année"></canvas>
+      </div>
+      <div class="db-legend" style="margin-top:12px">
+        <div class="db-legend-item">
+          <span class="db-legend-dot" style="background:#D4650A;border-radius:50%"></span>
+          Stages actifs
+        </div>
+        <div class="db-legend-item">
+          <span class="db-legend-dot" style="background:#2563EB;border-radius:50%"></span>
+          Offres ouvertes
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

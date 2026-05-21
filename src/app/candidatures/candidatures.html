@@ -1,0 +1,567 @@
+<div class="cand-page">
+  <div class="cand-wrap">
+
+    <section class="cand-header">
+      <div class="cand-header-left">
+        <h1 class="cand-title">
+          Gestion des <span class="cand-accent">Candidatures</span>
+        </h1>
+        <p class="cand-subtitle">
+          Consultez et traitez les candidatures déposées pour vos offres de stage.
+        </p>
+      </div>
+
+      <div class="cand-stats">
+        <div class="cand-stat">
+          <span class="cand-stat-value">{{ candidatures.length }}</span>
+          <span class="cand-stat-label">Total</span>
+        </div>
+        <div class="cand-stat highlight">
+          <span class="cand-stat-value">{{ totalEnAttente }}</span>
+          <span class="cand-stat-label">En attente</span>
+        </div>
+        <div class="cand-stat green">
+          <span class="cand-stat-value">{{ totalAcceptees }}</span>
+          <span class="cand-stat-label">Acceptées</span>
+        </div>
+        <div class="cand-stat red">
+          <span class="cand-stat-value">{{ totalRefusees }}</span>
+          <span class="cand-stat-label">Refusées</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="cand-controls">
+      <div class="cand-search" [class.focused]="searchFocused">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          class="cand-search-input"
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher un candidat, sujet…"
+          (focus)="searchFocused = true"
+          (blur)="searchFocused = false"
+        />
+        <button class="cand-search-x" *ngIf="searchQuery" (click)="searchQuery = ''">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cand-filters">
+        <button class="cand-filter-btn" [class.active]="filterStatut === 'TOUS'" (click)="setFilter('TOUS')">Tous</button>
+        <button class="cand-filter-btn orange" [class.active]="filterStatut === 'EN_ATTENTE'" (click)="setFilter('EN_ATTENTE')">En attente</button>
+        <button class="cand-filter-btn green"  [class.active]="filterStatut === 'ACCEPTE'"   (click)="setFilter('ACCEPTE')">Acceptées</button>
+        <button class="cand-filter-btn red"    [class.active]="filterStatut === 'REFUSEE'"   (click)="setFilter('REFUSEE')">Refusées</button>
+      </div>
+    </div>
+
+    <div class="cand-loading" *ngIf="loading">
+      <div class="cand-spinner"></div>
+      <p>Chargement des candidatures…</p>
+    </div>
+
+    <div class="cand-table-wrap" *ngIf="!loading">
+      <div class="cand-thead">
+        <div class="cand-th">#</div>
+        <div class="cand-th">Candidat</div>
+        <div class="cand-th">Sujet visé</div>
+        <div class="cand-th">Dépôt</div>
+        <div class="cand-th">Score IA</div>
+        <div class="cand-th">Statut</div>
+        <div class="cand-th"></div>
+      </div>
+
+      <div class="cand-tbody">
+        <div
+          class="cand-row"
+          *ngFor="let c of filtered; let i = index; trackBy: trackByCandId"
+          [style.animation-delay]="(i * 0.04) + 's'"
+          (click)="voirDetail(c)"
+        >
+          <div class="cand-row-accent"
+               [class.orange]="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN'"
+               [class.green]="c.statut === 'ACCEPTE' || c.statut === 'VALIDEE_ENCADRANT'"
+               [class.red]="c.statut === 'REFUSEE' || c.statut === 'REFUSEE_ENCADRANT'">
+          </div>
+
+          <div class="cand-row-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+
+          <div class="cand-td cand-td-num">
+            <span class="cand-idx">{{ i + 1 < 10 ? '0' + (i + 1) : (i + 1) }}</span>
+          </div>
+
+          <div class="cand-td cand-td-main">
+            <div class="cand-avatar" [style.background]="getAvatarColor(getNomStagiaire(c.stagiaire))">
+              {{ getInitials(getNomStagiaire(c.stagiaire)) }}
+            </div>
+            <div class="cand-info">
+              <span class="cand-name">{{ getNomStagiaire(c.stagiaire) }}</span>
+              <span class="cand-email">{{ c.stagiaire?.email }}</span>
+            </div>
+          </div>
+
+          <div class="cand-td cand-td-sujet">
+            <div class="cand-sujet-info">
+              <span class="cand-sujet-titre">{{ c.sujet?.titre || '—' }}</span>
+              <div class="cand-sujet-tags">
+                <span class="cand-tag blue" *ngIf="getNomChamp(c.sujet?.filiereCible)">
+                  {{ getNomChamp(c.sujet?.filiereCible) }}
+                </span>
+                <span class="cand-tag gray" *ngIf="getNomChamp(c.sujet?.cycleCible)">
+                  {{ getNomChamp(c.sujet?.cycleCible) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cand-td cand-td-date">
+            <span class="cand-date-top">{{ formatDate(c.dateDepot) }}</span>
+            <span class="cand-date-sub">{{ formatDateRelative(c.dateDepot) }}</span>
+          </div>
+
+          <div class="cand-td cand-td-score">
+            <div class="cand-score-wrap" *ngIf="c.scoreMatchingIA != null">
+              <div class="cand-score-bar">
+                <div class="cand-score-fill" [style.width.%]="c.scoreMatchingIA"></div>
+              </div>
+              <span class="cand-score-val">{{ c.scoreMatchingIA | number:'1.0-0' }}%</span>
+            </div>
+            <span class="cand-score-na" *ngIf="c.scoreMatchingIA == null">
+              <span class="cand-score-badge">Non évalué</span>
+            </span>
+          </div>
+
+          <div class="cand-td cand-td-status">
+            <span class="cand-status"
+                  [class.wait]="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN'"
+                  [class.ok]="c.statut === 'ACCEPTE' || c.statut === 'VALIDEE_ENCADRANT'"
+                  [class.no]="c.statut === 'REFUSEE' || c.statut === 'REFUSEE_ENCADRANT'">
+              <i class="cand-status-dot"></i>
+              {{ c.statut === 'EN_ATTENTE' ? 'En attente'
+               : c.statut === 'EN_ENTRETIEN' ? 'En entretien'
+               : c.statut === 'VALIDEE_ENCADRANT' ? 'Entretien réalisé'
+               : c.statut === 'REFUSEE_ENCADRANT' ? 'Refusé encadrant'
+               : c.statut === 'ACCEPTE' ? 'Acceptée' : 'Refusée' }}
+            </span>
+          </div>
+
+          <div class="cand-td cand-td-actions" (click)="$event.stopPropagation()">
+            <button class="cand-act green" title="Accepter"
+                    *ngIf="c.statut === 'VALIDEE_ENCADRANT'"
+                    (click)="accepter(c, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </button>
+
+            <button class="cand-act red" title="Refuser"
+                    *ngIf="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN' || c.statut === 'VALIDEE_ENCADRANT'"
+                    (click)="refuser(c, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+
+            <button class="cand-act orange cand-act-view" title="Voir dossier"
+                    (click)="voirDetail(c)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+
+            <button class="cand-act del" title="Supprimer"
+                    (click)="supprimer(c.id, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6m4-6v6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="cand-empty" *ngIf="filtered.length === 0 && !loading">
+          <div class="cand-empty-ico">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <p class="cand-empty-title">Aucune candidature</p>
+          <p class="cand-empty-sub">Modifiez vos filtres ou attendez de nouveaux dépôts.</p>
+        </div>
+      </div>
+
+      <div class="cand-tfoot" *ngIf="filtered.length > 0">
+        <span class="cand-tfoot-txt">
+          <strong>{{ filtered.length }}</strong> candidature{{ filtered.length > 1 ? 's' : '' }}
+        </span>
+        <div class="cand-tfoot-legend">
+          <span class="cand-leg"><i class="cand-leg-dot orange"></i>{{ totalEnAttente }} en attente</span>
+          <span>·</span>
+          <span class="cand-leg"><i class="cand-leg-dot green"></i>{{ totalAcceptees }} acceptées</span>
+          <span>·</span>
+          <span class="cand-leg"><i class="cand-leg-dot red"></i>{{ totalRefusees }} refusées</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MODAL DOSSIER ═══ -->
+<div class="cand-modal-backdrop" *ngIf="selectedCand" (click)="fermerDetail()">
+  <div class="cand-modal" (click)="$event.stopPropagation()">
+
+    <div class="cand-modal-header">
+      <div class="cand-modal-top">
+        <span class="cand-modal-label">Dossier candidature</span>
+        <button class="cand-panel-close" (click)="fermerDetail()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cand-modal-profile">
+        <div class="cand-panel-avatar"
+             [style.background]="getAvatarColor(getNomStagiaire(cand.stagiaire))">
+          {{ getInitials(getNomStagiaire(cand.stagiaire)) }}
+        </div>
+        <div class="cand-modal-identity">
+          <h2>{{ getNomStagiaire(cand.stagiaire) }}</h2>
+          <span>{{ cand.stagiaire?.email }}</span>
+        </div>
+        <!-- ✅ Badge statut corrigé -->
+        <span class="cand-status"
+              [class.wait]="cand.statut === 'EN_ATTENTE' || cand.statut === 'EN_ENTRETIEN'"
+              [class.ok]="cand.statut === 'ACCEPTE' || cand.statut === 'VALIDEE_ENCADRANT'"
+              [class.no]="cand.statut === 'REFUSEE' || cand.statut === 'REFUSEE_ENCADRANT'">
+          <i class="cand-status-dot"></i>
+          {{ cand.statut === 'EN_ATTENTE' ? 'En attente'
+           : cand.statut === 'EN_ENTRETIEN' ? 'En entretien'
+           : cand.statut === 'VALIDEE_ENCADRANT' ? 'Validé encadrant'
+           : cand.statut === 'REFUSEE_ENCADRANT' ? 'Refusé encadrant'
+           : cand.statut === 'ACCEPTE' ? 'Acceptée' : 'Refusée' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="cand-modal-body">
+
+      <!-- Sujet -->
+      <div class="cand-modal-box cand-modal-box-wide">
+        <div class="cand-modal-box-title">Sujet visé</div>
+        <div class="cand-modal-sujet">
+          <div class="cand-modal-sujet-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2580F" stroke-width="2" stroke-linecap="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+            </svg>
+          </div>
+          <div>
+            <p class="cand-modal-sujet-titre">{{ cand.sujet?.titre || '—' }}</p>
+            <div class="cand-sujet-tags">
+              <span class="cand-tag blue" *ngIf="getNomChamp(cand.sujet?.filiereCible)">
+                {{ getNomChamp(cand.sujet?.filiereCible) }}
+              </span>
+              <span class="cand-tag gray" *ngIf="getNomChamp(cand.sujet?.cycleCible)">
+                {{ getNomChamp(cand.sujet?.cycleCible) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cand-modal-grid">
+
+        <!-- Date dépôt -->
+        <div class="cand-modal-box">
+          <div class="cand-modal-box-title">Date de dépôt</div>
+          <div class="cand-modal-box-value">
+            {{ formatDate(cand.dateDepot) }}
+            <span class="cand-muted"> · {{ formatDateRelative(cand.dateDepot) }}</span>
+          </div>
+        </div>
+
+        <!-- Entretien -->
+        <div class="cand-modal-box">
+          <div class="cand-modal-box-title">Entretien planifié</div>
+          <div class="cand-modal-box-value green-text" *ngIf="cand.dateEntretien">
+            {{ formatDate(cand.dateEntretien) }}
+          </div>
+          <div class="cand-modal-box-value cand-muted" *ngIf="!cand.dateEntretien">
+            Non planifié
+          </div>
+        </div>
+
+        <!-- CV -->
+        <div class="cand-modal-box" *ngIf="cand.cvPath">
+          <div class="cand-modal-box-title">CV déposé</div>
+          <a class="cand-cv-btn" (click)="ouvrirCv(cand.cvPath!)" style="cursor:pointer; margin-top:4px;">
+            <div class="cand-cv-btn-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <polyline points="12 18 12 12"/><polyline points="9 15 12 12 15 15"/>
+              </svg>
+              Télécharger le CV
+            </div>
+            <span class="cand-cv-btn-badge">PDF</span>
+          </a>
+        </div>
+
+        <!-- Encadrant assigné -->
+        <div class="cand-modal-box" *ngIf="cand.encadrant">
+          <div class="cand-modal-box-title">Encadrant assigné</div>
+          <div class="cand-modal-box-value" style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <div class="cand-avatar" style="width:32px;height:32px;font-size:11px;flex-shrink:0;"
+                 [style.background]="getAvatarColor(getNomStagiaire(cand.encadrant))">
+              {{ getInitials(getNomStagiaire(cand.encadrant)) }}
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#111;">{{ getNomStagiaire(cand.encadrant) }}</div>
+              <div style="font-size:11px;color:#888;">{{ cand.encadrant?.email }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analyse IA complète -->
+        <div class="cand-modal-box cand-modal-box-wide" *ngIf="cand.analyseIA">
+          <div class="cand-modal-box-title">Analyse IA</div>
+
+          <div class="cand-ia-reco"
+               [class.green]="cand.analyseIA?.recommendation === 'ADAPTE'"
+               [class.orange]="cand.analyseIA?.recommendation === 'PARTIELLEMENT_ADAPTE'"
+               [class.red]="cand.analyseIA?.recommendation === 'NON_ADAPTE'">
+            {{ cand.analyseIA?.recommendationLabel }}
+          </div>
+
+          <div class="cand-ia-row">
+            <span class="cand-ia-label">Score global</span>
+            <div class="cand-ia-bar-wrap">
+              <div class="cand-ia-bar">
+                <div class="cand-ia-bar-fill orange" [style.width.%]="cand.analyseIA?.scoreGlobal"></div>
+              </div>
+              <span class="cand-ia-pct orange">{{ cand.analyseIA?.scoreGlobal | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="cand-ia-row">
+            <span class="cand-ia-label">Compétences <span class="cand-ia-weight">45%</span></span>
+            <div class="cand-ia-bar-wrap">
+              <div class="cand-ia-bar">
+                <div class="cand-ia-bar-fill blue" [style.width.%]="cand.analyseIA?.scoreCompetences"></div>
+              </div>
+              <span class="cand-ia-pct blue">{{ cand.analyseIA?.scoreCompetences | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="cand-ia-row">
+            <span class="cand-ia-label">Formation <span class="cand-ia-weight">20%</span></span>
+            <div class="cand-ia-bar-wrap">
+              <div class="cand-ia-bar">
+                <div class="cand-ia-bar-fill green" [style.width.%]="cand.analyseIA?.scoreFormation"></div>
+              </div>
+              <span class="cand-ia-pct green">{{ cand.analyseIA?.scoreFormation | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div class="cand-ia-row">
+            <span class="cand-ia-label">Expérience <span class="cand-ia-weight">35%</span></span>
+            <div class="cand-ia-bar-wrap">
+              <div class="cand-ia-bar">
+                <div class="cand-ia-bar-fill purple" [style.width.%]="cand.analyseIA?.scoreExperience"></div>
+              </div>
+              <span class="cand-ia-pct purple">{{ cand.analyseIA?.scoreExperience | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
+          <div *ngIf="cand.analyseIA?.competencesMatchees?.length" style="margin-top:8px;">
+            <div class="cand-ia-tags-label">✅ Compétences matchées</div>
+            <div class="cand-panel-skills" style="margin-top:4px;">
+              <span class="cand-tag"
+                    style="background:#dcfce7;color:#16a34a;border:1px solid rgba(34,197,94,0.2);"
+                    *ngFor="let skill of cand.analyseIA?.competencesMatchees">{{ skill }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="cand.analyseIA?.competencesManquantes?.length" style="margin-top:8px;">
+            <div class="cand-ia-tags-label">❌ Compétences manquantes</div>
+            <div class="cand-panel-skills" style="margin-top:4px;">
+              <span class="cand-tag"
+                    style="background:#fee2e2;color:#b91c1c;border:1px solid rgba(220,38,38,0.2);"
+                    *ngFor="let skill of cand.analyseIA?.competencesManquantes">{{ skill }}</span>
+            </div>
+          </div>
+
+        </div><!-- ✅ Fermeture cand-modal-box-wide Analyse IA -->
+
+        <!-- Score IA simple si pas d'analyseIA -->
+        <div class="cand-modal-box" *ngIf="!cand.analyseIA">
+          <div class="cand-modal-box-title">Score matching IA</div>
+          <div *ngIf="cand.scoreMatchingIA != null">
+            <div class="cand-panel-score" style="margin-top: 4px;">
+              <div class="cand-panel-score-bar">
+                <div class="cand-panel-score-fill" [style.width.%]="cand.scoreMatchingIA"></div>
+              </div>
+              <strong style="font-size:14px; color:#C2580F;">{{ cand.scoreMatchingIA | number:'1.0-0' }}%</strong>
+            </div>
+          </div>
+          <div class="cand-modal-box-value cand-muted" *ngIf="cand.scoreMatchingIA == null">
+            Non évalué
+          </div>
+        </div>
+
+        <!-- Compétences IA extraites -->
+        <div class="cand-modal-box cand-modal-box-wide" *ngIf="cand.competencesExtraites?.length">
+          <div class="cand-modal-box-title">Compétences détectées (IA)</div>
+          <div class="cand-panel-skills" style="margin-top:4px;">
+            <span class="cand-tag orange" *ngFor="let s of cand.competencesExtraites">{{ s }}</span>
+          </div>
+        </div>
+
+        <!-- Planifier entretien -->
+        <div class="cand-modal-box cand-modal-box-wide" *ngIf="showEntretienModal">
+          <div class="cand-modal-box-title">Planifier un entretien</div>
+          <div class="cand-entretien-modal" style="margin-top:6px;">
+
+            <input type="datetime-local" class="cand-datetime-input" [(ngModel)]="dateEntretien"/>
+
+            <div class="cand-dropdown" [class.open]="dropdownOpen">
+              <button class="cand-dropdown-trigger" type="button" (click)="dropdownOpen = !dropdownOpen">
+                <span>{{ getEncadrantNom() }}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="cand-dropdown-menu" *ngIf="dropdownOpen">
+                <div class="cand-dropdown-item"
+                     *ngFor="let e of encadrants"
+                     [class.selected]="encadrantId === e.id"
+                     (click)="selectEncadrant(e)">
+                  {{ e.prenom }} {{ e.nom }}
+                  <svg *ngIf="encadrantId === e.id" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="cand-entretien-btns">
+              <button class="cand-btn-ghost" (click)="showEntretienModal = false">Annuler</button>
+              <button class="cand-btn-primary"
+                      (click)="planifierEntretien()"
+                      [disabled]="!dateEntretien || !encadrantId || actionLoading">
+                {{ actionLoading ? 'En cours…' : 'Confirmer' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ✅ Footer corrigé selon le workflow -->
+    <div class="cand-modal-footer">
+
+      <!-- EN_ATTENTE : Entretien + Refuser -->
+      <ng-container *ngIf="cand.statut === 'EN_ATTENTE'">
+        <button class="cand-panel-btn orange-ghost"
+                (click)="ouvrirEntretien()"
+                [disabled]="actionLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Entretien
+        </button>
+        <button class="cand-panel-btn red-ghost"
+                (click)="refuser(cand)"
+                [disabled]="actionLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Refuser
+        </button>
+      </ng-container>
+
+      <!-- EN_ENTRETIEN : attente validation encadrant + Refuser -->
+      <ng-container *ngIf="cand.statut === 'EN_ENTRETIEN'">
+        <span class="cand-status wait">
+          <i class="cand-status-dot"></i>
+          En attente de validation encadrant
+        </span>
+        <button class="cand-panel-btn red-ghost"
+                (click)="refuser(cand)"
+                [disabled]="actionLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Refuser
+        </button>
+      </ng-container>
+
+      <!-- VALIDEE_ENCADRANT : Accepter + Refuser -->
+      <ng-container *ngIf="cand.statut === 'VALIDEE_ENCADRANT'">
+        <span class="cand-status ok">
+          <i class="cand-status-dot"></i>
+          Entretien réalisé
+        </span>
+        <button class="cand-panel-btn red-ghost"
+                (click)="refuser(cand)"
+                [disabled]="actionLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Refuser
+        </button>
+        <button class="cand-panel-btn green-solid"
+                (click)="accepter(cand)"
+                [disabled]="actionLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ actionLoading ? 'En cours…' : 'Accepter' }}
+        </button>
+      </ng-container>
+
+      <!-- ACCEPTE -->
+      <span class="cand-status ok" *ngIf="cand.statut === 'ACCEPTE'">
+        <i class="cand-status-dot"></i>
+        Dossier accepté
+      </span>
+
+      <!-- REFUSEE -->
+      <span class="cand-status no" *ngIf="cand.statut === 'REFUSEE'">
+        <i class="cand-status-dot"></i>
+        Dossier refusé
+      </span>
+
+
+
+      <button class="cand-panel-btn"
+              style="margin-left:auto; background:#f8fafc; color:#444444; border:1px solid #e5e5e5;"
+              (click)="fermerDetail()">
+        Fermer
+      </button>
+    </div>
+
+  </div>
+</div>

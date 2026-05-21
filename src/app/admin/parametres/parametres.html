@@ -1,0 +1,179 @@
+<div class="main-content">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'filieres'" (click)="activeTab = 'filieres'">
+      Filières
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'cycles'" (click)="activeTab = 'cycles'">
+      Cycles
+    </button>
+  </div>
+
+  <!-- ─── FILIERES ─── -->
+  <div class="section-card" *ngIf="activeTab === 'filieres'">
+    <div class="section-header">
+      <div class="section-info">
+        <div class="section-title-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#C2580F" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          <h2>Gestion des filières</h2>
+        </div>
+        <p>Ajoutez, modifiez ou supprimez les filières disponibles</p>
+      </div>
+      <button class="btn-ajouter" (click)="openAddFiliere()">
+        <span>+</span> Ajouter une filière
+      </button>
+    </div>
+
+    <div class="cards-grid">
+      <div class="item-card" *ngFor="let f of filieres">
+        <div class="item-card-header">
+          <h3 class="item-name">{{ f.nom }}</h3>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="openEditFiliere(f)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="btn-delete" (click)="deleteFiliere(f.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <span class="item-code">{{ f.code }}</span>
+        <p class="item-desc">{{ f.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CYCLES ─── -->
+  <div class="section-card" *ngIf="activeTab === 'cycles'">
+    <div class="section-header">
+      <div class="section-info">
+        <div class="section-title-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#C2580F" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <h2>Gestion des cycles</h2>
+        </div>
+        <p>Ajoutez, modifiez ou supprimez les cycles de formation</p>
+      </div>
+      <button class="btn-ajouter" (click)="openAddCycle()">
+        <span>+</span> Ajouter un cycle
+      </button>
+    </div>
+
+    <div class="cards-grid">
+      <div class="item-card" *ngFor="let c of cycles">
+        <div class="item-card-header">
+          <h3 class="item-name">{{ c.nom }}</h3>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="openEditCycle(c)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="btn-delete" (click)="deleteCycle(c.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="item-duree">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="duree-badge">{{ c.duree }}</span>
+        </div>
+        <p class="item-desc">{{ c.description }}</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL FILIERE                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showModalFiliere" (click)="showModalFiliere = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">{{ editingFiliere ? 'Modifier la filière' : 'Ajouter une filière' }}</h2>
+        <p class="modal-sub">Remplissez le formulaire pour {{ editingFiliere ? 'modifier' : 'ajouter' }} une filière.</p>
+      </div>
+      <button class="modal-close" (click)="showModalFiliere = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="filiere-nom">Nom de la filière</label>
+          <input id="filiere-nom" name="filiere-nom" type="text" [(ngModel)]="newFiliere.nom" placeholder="Ex: Génie Informatique" />
+        </div>
+        <div class="form-group">
+          <label for="filiere-code">Code</label>
+          <input id="filiere-code" name="filiere-code" type="text" [(ngModel)]="newFiliere.code" placeholder="Ex: GI" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="filiere-desc">Description</label>
+        <textarea id="filiere-desc" name="filiere-desc" [(ngModel)]="newFiliere.description" placeholder="Décrivez cette filière..." rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-annuler" (click)="showModalFiliere = false">Annuler</button>
+      <button class="btn-creer" (click)="saveFiliere()">{{ editingFiliere ? 'Modifier' : 'Ajouter' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MODAL CYCLE                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showModalCycle" (click)="showModalCycle = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">{{ editingCycle ? 'Modifier le cycle' : 'Ajouter un cycle' }}</h2>
+        <p class="modal-sub">Remplissez le formulaire pour {{ editingCycle ? 'modifier' : 'ajouter' }} un cycle.</p>
+      </div>
+      <button class="modal-close" (click)="showModalCycle = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cycle-nom">Nom du cycle</label>
+          <input id="cycle-nom" name="cycle-nom" type="text" [(ngModel)]="newCycle.nom" placeholder="Ex: Licence" />
+        </div>
+        <div class="form-group">
+          <label for="cycle-duree">Durée</label>
+          <input id="cycle-duree" name="cycle-duree" type="text" [(ngModel)]="newCycle.duree" placeholder="Ex: 3 ans" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cycle-desc">Description</label>
+        <textarea id="cycle-desc" name="cycle-desc" [(ngModel)]="newCycle.description" placeholder="Décrivez ce cycle..." rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-annuler" (click)="showModalCycle = false">Annuler</button>
+      <button class="btn-creer" (click)="saveCycle()">{{ editingCycle ? 'Modifier' : 'Ajouter' }}</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,113 @@
+<div class="da-page">
+  <div class="da-wrap">
+
+    <!-- Header -->
+    <section class="da-header">
+      <div class="da-header-left">
+        <h1 class="da-title">Demandes d'<span class="da-accent">accès</span></h1>
+        <p class="da-subtitle">Gérez les demandes d'accès soumises par les RH et Encadrants.</p>
+      </div>
+      <div class="da-stats">
+        <div class="da-stat">
+          <span class="da-stat-value">{{ demandes.length }}</span>
+          <span class="da-stat-label">Total</span>
+        </div>
+        <div class="da-stat highlight">
+          <span class="da-stat-value">{{ totalEnAttente }}</span>
+          <span class="da-stat-label">En attente</span>
+        </div>
+        <div class="da-stat green">
+          <span class="da-stat-value">{{ totalValidees }}</span>
+          <span class="da-stat-label">Validées</span>
+        </div>
+        <div class="da-stat red">
+          <span class="da-stat-value">{{ totalRefusees }}</span>
+          <span class="da-stat-label">Refusées</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtres -->
+    <div class="da-filters-bar">
+      <button class="da-filter-btn" [class.active]="filterStatut === 'TOUTES'" (click)="filterStatut = 'TOUTES'">Toutes</button>
+      <button class="da-filter-btn orange" [class.active]="filterStatut === 'EN_ATTENTE'" (click)="filterStatut = 'EN_ATTENTE'">En attente</button>
+      <button class="da-filter-btn green" [class.active]="filterStatut === 'VALIDEE'" (click)="filterStatut = 'VALIDEE'">Validées</button>
+      <button class="da-filter-btn red" [class.active]="filterStatut === 'REFUSEE'" (click)="filterStatut = 'REFUSEE'">Refusées</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="da-loading" *ngIf="loading">
+      <div class="da-spinner"></div>
+      <p>Chargement…</p>
+    </div>
+
+    <!-- Liste -->
+    <div class="da-list" *ngIf="!loading">
+
+      <div class="da-empty" *ngIf="filtered.length === 0">
+        <p class="da-empty-title">Aucune demande</p>
+        <p class="da-empty-sub">Aucune demande ne correspond à ce filtre.</p>
+      </div>
+
+      <div class="da-card" *ngFor="let d of filtered">
+
+        <!-- Avatar + Info -->
+        <div class="da-card-left">
+          <div class="da-avatar">{{ getInitials(d.nom, d.prenom) }}</div>
+          <div class="da-info">
+            <span class="da-name">{{ d.prenom }} {{ d.nom }}</span>
+            <span class="da-email">{{ d.email }}</span>
+            <span class="da-phone" *ngIf="d.telephone">📞 {{ d.telephone }}</span>
+          </div>
+        </div>
+
+        <!-- Role + Détails -->
+        <div class="da-card-mid">
+          <span class="da-role-badge"
+                [class.rh]="d.roleSouhaite === 'RH'"
+                [class.enc]="d.roleSouhaite === 'ENCADRANT'">
+            {{ d.roleSouhaite }}
+          </span>
+          <div class="da-details" *ngIf="d.departement || d.specialite">
+            <span *ngIf="d.departement">🏢 {{ d.departement }}</span>
+            <span *ngIf="d.specialite">⚙️ {{ d.specialite }}</span>
+          </div>
+          <span class="da-date">{{ formatDate(d.dateDemande) }}</span>
+        </div>
+
+        <!-- Statut + Actions -->
+        <div class="da-card-right">
+          <span class="da-statut"
+                [class.wait]="d.statut === 'EN_ATTENTE'"
+                [class.ok]="d.statut === 'VALIDEE'"
+                [class.no]="d.statut === 'REFUSEE'">
+            <i class="da-dot"></i>
+            {{ d.statut === 'EN_ATTENTE' ? 'En attente' : d.statut === 'VALIDEE' ? 'Validée' : 'Refusée' }}
+          </span>
+
+          <div class="da-actions" *ngIf="d.statut === 'EN_ATTENTE'">
+            <button class="da-btn green"
+                    (click)="valider(d.id)"
+                    [disabled]="actionLoading === d.id">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {{ actionLoading === d.id ? '…' : 'Valider' }}
+            </button>
+            <button class="da-btn red"
+                    (click)="refuser(d.id)"
+                    [disabled]="actionLoading === d.id">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              {{ actionLoading === d.id ? '…' : 'Refuser' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

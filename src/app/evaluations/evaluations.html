@@ -1,0 +1,124 @@
+<div class="eval-page">
+  <div class="eval-wrap">
+
+    <!-- HEADER -->
+    <div class="eval-hero">
+      <div class="eval-hero-left">
+        <h1 class="eval-title">
+          Évaluations des <span class="eval-accent">Stagiaires</span>
+        </h1>
+        <p class="eval-subtitle">Consulter les évaluations données par les encadrants</p>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="eval-search-wrap">
+      <div class="eval-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          class="eval-search-input"
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher par stagiaire ou encadrant..."
+        />
+        <button class="eval-search-x" *ngIf="searchQuery" (click)="searchQuery = ''">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="eval-loading" *ngIf="loading">
+      <div class="eval-spinner"></div>
+      <p>Chargement des évaluations…</p>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="eval-empty" *ngIf="!loading && filtered.length === 0">
+      <div class="eval-empty-ico">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <p class="eval-empty-title">Aucune évaluation</p>
+      <p class="eval-empty-sub">Les évaluations des encadrants apparaîtront ici.</p>
+    </div>
+
+    <!-- CARDS LIST -->
+    <div class="eval-list" *ngIf="!loading && filtered.length > 0">
+      <div class="eval-card"
+           *ngFor="let e of filtered; let i = index"
+           [style.animation-delay]="(i * 0.05) + 's'">
+
+        <!-- Card Header -->
+        <div class="eval-card-header">
+          <div class="eval-card-left">
+            <div class="eval-avatar" [style.background]="getAvatarColor(getNomStagiaire(e))">
+              {{ getInitiales(getNomStagiaire(e)) }}
+            </div>
+            <div class="eval-card-info">
+              <h3 class="eval-card-name">{{ getNomStagiaire(e) }}</h3>
+              <div class="eval-card-meta">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                {{ getNomEncadrant(e) }}
+                <span class="eval-meta-sep">·</span>
+                {{ formatDate(e.dateEvaluation) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="eval-card-right">
+            <div class="eval-stars-wrap">
+              <svg *ngFor="let s of getStars(e.note)"
+                   width="20" height="20" viewBox="0 0 24 24"
+                   [style.fill]="s ? '#C2580F' : '#e5e5e5'"
+                   [style.stroke]="s ? '#C2580F' : '#e5e5e5'"
+                   stroke-width="1">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <span class="eval-note-num">{{ getNoteSur5(e.note) }}/5</span>
+            </div>
+            <span class="eval-note-badge"
+                  [style.background]="getNoteLabelBg(e.note)"
+                  [style.color]="getNoteLabelColor(e.note)">
+              {{ getNoteLabel(e.note) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Critères grille -->
+        <div class="eval-criteres-grid">
+          <div class="eval-critere-item"
+               *ngFor="let label of critereLabels; let ci = index">
+            <span class="eval-critere-label">{{ label }}</span>
+            <div class="eval-critere-stars">
+              <svg *ngFor="let s of getCritereStars(e.note, ci)"
+                   width="16" height="16" viewBox="0 0 24 24"
+                   [style.fill]="s ? '#C2580F' : '#e5e5e5'"
+                   [style.stroke]="s ? '#C2580F' : '#e5e5e5'"
+                   stroke-width="1">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Commentaire -->
+        <div class="eval-commentaire" *ngIf="e.commentaire">
+          <p class="eval-commentaire-text">"{{ e.commentaire }}"</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <h1 class="auth-title">Connexion</h1>
+      <p class="auth-subtitle">Connectez-vous pour accéder à votre espace</p>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="auth-field">
+      <div class="auth-field-header">
+        <label class="auth-label">Adresse email</label>
+      </div>
+      <div class="auth-input-wrapper" [class.has-error]="emailError">
+        <input type="email" [(ngModel)]="loginData.email"
+               placeholder="nom@entreprise.com" class="auth-input"
+               (input)="emailError = ''"/>
+      </div>
+      <div class="auth-error" *ngIf="emailError">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ emailError }}
+      </div>
+    </div>
+
+    <!-- MOT DE PASSE -->
+    <div class="auth-field">
+      <div class="auth-field-header">
+        <label class="auth-label">Mot de passe</label>
+      </div>
+      <div class="auth-input-wrapper" [class.has-error]="passwordError">
+        <input [type]="showPassword ? 'text' : 'password'"
+               [(ngModel)]="loginData.password"
+               placeholder="Entrez votre mot de passe" class="auth-input"
+               (input)="passwordError = ''"/>
+        <button class="auth-eye-btn" type="button" (click)="showPassword = !showPassword">
+          <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="auth-error" *ngIf="passwordError">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ passwordError }}
+      </div>
+    </div>
+
+    <!-- BOUTON -->
+    <button class="auth-btn" (click)="onLogin()" [disabled]="isLoading">
+      <span class="auth-btn-spinner" *ngIf="isLoading"></span>
+      <ng-container *ngIf="!isLoading">Se connecter →</ng-container>
+    </button>
+
+    <!-- FOOTER -->
+    <p class="auth-footer">
+      Pas encore de compte ?
+      <span class="auth-link" (click)="goToRegister()">Créer un compte</span>
+    </p>
+
+  </div>
+</div>

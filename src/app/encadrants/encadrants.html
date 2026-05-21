@@ -1,0 +1,217 @@
+<div class="enc-page">
+  <div class="enc-wrap">
+
+    <section class="enc-header">
+      <div class="enc-header-left">
+        <h1 class="enc-title">
+          Gestion des <span class="enc-accent">Encadrants</span>
+        </h1>
+        <p class="enc-subtitle">
+          Suivez la répartition des stagiaires par encadrant.
+        </p>
+      </div>
+
+      <div class="enc-stats">
+        <div class="enc-stat">
+          <span class="enc-stat-value">{{ encadrants.length }}</span>
+          <span class="enc-stat-label">Total</span>
+        </div>
+        <div class="enc-stat green">
+          <span class="enc-stat-value">{{ encadrantsAvecAffectation }}</span>
+          <span class="enc-stat-label">Avec stagiaire</span>
+        </div>
+        <div class="enc-stat gray">
+          <span class="enc-stat-value">{{ stagiaires.length }}</span>
+          <span class="enc-stat-label">Stagiaires</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="enc-loading" *ngIf="loading">
+      <div class="enc-spinner"></div>
+      <p>Chargement…</p>
+    </div>
+
+    <div class="enc-table-wrap" *ngIf="!loading">
+
+      <!-- ✅ BARRE DE RECHERCHE -->
+      <div class="enc-search-bar">
+        <div class="enc-search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            class="enc-search-input"
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par nom, email, spécialité…"/>
+          <button class="enc-search-clear" *ngIf="searchQuery" (click)="searchQuery = ''">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <!-- ✅ Résultat de recherche -->
+        <span class="enc-search-result" *ngIf="searchQuery">
+          {{ encadrantsFiltres.length }} résultat(s) pour "{{ searchQuery }}"
+        </span>
+      </div>
+
+      <div class="enc-empty" *ngIf="encadrantsFiltres.length === 0">
+        <div class="enc-empty-ico">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p class="enc-empty-title">
+          {{ searchQuery ? 'Aucun résultat' : 'Aucun encadrant' }}
+        </p>
+        <p class="enc-empty-sub">
+          {{ searchQuery ? 'Essayez un autre terme de recherche.' : 'Les encadrants inscrits apparaîtront ici.' }}
+        </p>
+      </div>
+
+      <div class="enc-thead" *ngIf="encadrantsFiltres.length > 0">
+        <div class="enc-th">Encadrant</div>
+        <div class="enc-th">Spécialité</div>
+        <div class="enc-th">Département</div>
+        <div class="enc-th">Stagiaires</div>
+        <div class="enc-th">Statut</div>
+      </div>
+
+      <!-- ✅ encadrantsFiltres au lieu de encadrants -->
+      <div class="enc-tbody" *ngIf="encadrantsFiltres.length > 0">
+        <div
+          class="enc-row"
+          *ngFor="let e of encadrantsFiltres; let i = index; trackBy: trackByEncadrant"
+          [style.animation-delay]="(i * 0.04) + 's'"
+        >
+          <div class="enc-row-accent" [class.active]="getStagiairesOfEncadrant(e.id).length > 0"></div>
+
+          <div class="enc-td enc-td-main">
+            <div class="enc-avatar" [style.background]="getAvatarColor(getNomComplet(e))">
+              {{ getInitials(getNomComplet(e)) }}
+            </div>
+            <div class="enc-info">
+              <span class="enc-name">{{ getNomComplet(e) }}</span>
+              <span class="enc-email">{{ e.email }}</span>
+            </div>
+          </div>
+
+          <div class="enc-td">
+            <span class="enc-text">{{ e.specialite || '—' }}</span>
+          </div>
+
+          <div class="enc-td">
+            <span class="enc-text">{{ e.departement || '—' }}</span>
+          </div>
+
+          <div class="enc-td">
+            <span
+              class="enc-count-badge"
+              [class.has-stagiaires]="getStagiairesOfEncadrant(e.id).length > 0"
+              [class.clickable]="getStagiairesOfEncadrant(e.id).length > 0"
+              (click)="ouvrirModal(e)"
+              [title]="getStagiairesOfEncadrant(e.id).length > 0 ? 'Voir les stagiaires' : ''"
+            >
+              {{ getStagiairesOfEncadrant(e.id).length }} stagiaire(s)
+              <svg *ngIf="getStagiairesOfEncadrant(e.id).length > 0"
+                   width="10" height="10" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </div>
+
+          <div class="enc-td">
+            <span
+              class="enc-status"
+              [class.available]="getStagiairesOfEncadrant(e.id).length === 0"
+              [class.busy]="getStagiairesOfEncadrant(e.id).length > 0"
+            >
+              <i class="enc-status-dot"></i>
+              {{ getStagiairesOfEncadrant(e.id).length === 0 ? 'Disponible' : 'Occupé' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="enc-tfoot" *ngIf="encadrantsFiltres.length > 0">
+        <span><strong>{{ encadrantsFiltres.length }}</strong> encadrant(s)</span>
+        <span>Cliquez sur le badge pour voir les stagiaires</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="enc-modal-backdrop" *ngIf="selectedEncadrant" (click)="fermerModal()">
+  <div class="enc-modal" (click)="$event.stopPropagation()">
+
+    <div class="enc-modal-header">
+      <div class="enc-modal-profile">
+        <div class="enc-avatar enc-modal-avatar"
+             [style.background]="getAvatarColor(getNomComplet(selectedEncadrant))">
+          {{ getInitials(getNomComplet(selectedEncadrant)) }}
+        </div>
+        <div>
+          <h2 class="enc-modal-name">{{ getNomComplet(selectedEncadrant) }}</h2>
+          <p class="enc-modal-email">{{ selectedEncadrant.email }}</p>
+        </div>
+      </div>
+      <button class="enc-modal-close" (click)="fermerModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="3" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="enc-modal-section-title">
+      {{ getStagiairesOfEncadrant(selectedEncadrant.id).length }} stagiaire(s) affecté(s)
+    </div>
+
+    <div class="enc-modal-body">
+      <div
+        class="enc-modal-stag"
+        *ngFor="let s of getStagiairesOfEncadrant(selectedEncadrant.id); trackBy: trackByStagiaire"
+      >
+        <div class="enc-modal-stag-left">
+          <div class="enc-stag-avatar" [style.background]="getAvatarColor(getNomStagiaire(s))">
+            {{ getInitials(getNomStagiaire(s)) }}
+          </div>
+          <div class="enc-stag-info">
+            <span class="enc-stag-name">{{ getNomStagiaire(s) }}</span>
+            <span class="enc-stag-email">{{ s.utilisateur?.email || '—' }}</span>
+          </div>
+        </div>
+
+        <div class="enc-modal-stag-right">
+          <div class="enc-modal-stag-sujet">{{ s.sujet?.titre || '—' }}</div>
+          <div class="enc-modal-stag-meta">
+            <span class="enc-status"
+                  [class.busy]="s.statusStage === 'EN_COURS'"
+                  [class.done]="s.statusStage === 'TERMINE'">
+              <i class="enc-status-dot"></i>
+              {{ s.statusStage === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+            </span>
+            <span class="enc-modal-date">Début : {{ s.dateDebut || '—' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="enc-modal-footer">
+      <button class="enc-modal-btn" (click)="fermerModal()">Fermer</button>
+    </div>
+
+  </div>
+</div>

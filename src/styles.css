@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ═══════════════════════════════════════
+   VARIABLES GLOBALES
+═══════════════════════════════════════ */
+:root {
+  --primary:      #C2580F;
+  --primary-dk:   #a34a0c;
+  --primary-lt:   #FDEBD0;
+  --dark:         #0f172a;
+  --mid:          #334155;
+  --muted:        #94a3b8;
+  --border:       #e2e8f0;
+  --bg:           #f8fafc;
+  --white:        #ffffff;
+  --green:        #22c55e;
+  --green-dk:     #16a34a;
+  --green-bg:     #f0fdf4;
+  --red:          #ef4444;
+  --red-dk:       #dc2626;
+  --red-bg:       #fff1f2;
+  --radius:       12px;
+  --radius-lg:    16px;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.08);
+  --transition:   0.18s ease;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ═══════════════════════════════════════
+   COMPOSANTS ANGULAR
+═══════════════════════════════════════ */
+app-root,
+app-profil, app-dashboard, app-candidatures,
+app-stagiaires, app-encadrants, app-evaluations,
+app-archives, app-parametres, app-welcome,
+app-admin-layout, app-admin-dashboard,
+app-liste-utilisateurs, app-demandes-acces,
+app-admin-profile, app-gestion-stages {
+  display: block;
+  min-height: 100%;
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+app-sidebar .sidebar-item.active {
+  background: var(--primary) !important;
+  color: var(--white) !important;
+}
+
+app-sidebar .sidebar-item:hover:not(.active) {
+  background: var(--primary-lt) !important;
+  color: var(--primary) !important;
+}
+
+/* ═══════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+  color: var(--dark);
+  line-height: 1.3;
+}
+
+p { line-height: 1.6; color: var(--mid); }
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+
+a:hover { opacity: 0.8; }
+
+/* ═══════════════════════════════════════
+   BOUTONS GLOBAUX
+═══════════════════════════════════════ */
+button { font-family: 'Inter', sans-serif; }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.btn-primary:hover { background: var(--primary-dk); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ═══════════════════════════════════════
+   CARDS GLOBALES
+═══════════════════════════════════════ */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════
+   INPUTS GLOBAUX
+═══════════════════════════════════════ */
+input, select, textarea {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--dark);
+}
+
+/* ═══════════════════════════════════════
+   BADGES GLOBAUX
+═══════════════════════════════════════ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-success { background: var(--green-bg); color: var(--green-dk); border: 1px solid rgba(34,197,94,0.2); }
+.badge-danger  { background: var(--red-bg);   color: var(--red-dk);   border: 1px solid rgba(239,68,68,0.2); }
+.badge-warning { background: var(--primary-lt); color: var(--primary); border: 1px solid var(--primary-lt); }
+
+/* ═══════════════════════════════════════
+   OVERRIDE BOOTSTRAP (éviter les conflits)
+═══════════════════════════════════════ */
+.btn { font-family: 'Inter', sans-serif; border-radius: var(--radius); }
+.card { border-radius: var(--radius-lg); border-color: var(--border); }
+.form-control { border-radius: var(--radius); border-color: var(--border); font-family: 'Inter', sans-serif; }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(194,88,15,0.1); }
+.table { font-family: 'Inter', sans-serif; }
+
+/* ═══════════════════════════════════════
+   LOGIN & REGISTER
+═══════════════════════════════════════ */
+app-login .auth-title,
+app-login .auth-label,
+app-login .auth-input,
+app-login .auth-subtitle,
+app-login .auth-remember span,
+app-register .auth-title,
+app-register .auth-label,
+app-register .auth-input,
+app-register .auth-subtitle {
+  color: var(--dark) !important;
+}
+.stat-card {
+  border-radius: 16px !important;
+}

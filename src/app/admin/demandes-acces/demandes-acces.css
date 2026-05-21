@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.da-page {
+  font-family: 'Inter', sans-serif;
+  background: #f8fafc;
+  min-height: 100%;
+  padding: 28px 32px 64px;
+  color: #111111;
+}
+
+.da-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.da-accent { color: #C2580F; }
+
+/* Header */
+.da-header {
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.da-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -0.4px; }
+.da-subtitle { margin: 0; font-size: 13px; color: #888; }
+
+.da-stats { display: flex; gap: 12px; }
+
+.da-stat {
+  min-width: 100px;
+  background: #f8fafc;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.da-stat.highlight { background: #FDEBD0; border-color: #C2580F; }
+.da-stat.green     { background: #dcfce7; border-color: rgba(34,197,94,0.25); }
+.da-stat.red       { background: #fee2e2; border-color: rgba(220,38,38,0.25); }
+
+.da-stat-value { font-size: 26px; font-weight: 900; color: #111; line-height: 1; }
+.da-stat.highlight .da-stat-value { color: #C2580F; }
+.da-stat.green     .da-stat-value { color: #16a34a; }
+.da-stat.red       .da-stat-value { color: #b91c1c; }
+.da-stat-label { font-size: 11px; font-weight: 700; color: #888; }
+
+/* Filtres */
+.da-filters-bar {
+  display: flex;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #efefef;
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.da-filter-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #E5E7EB;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.da-filter-btn.active        { background: #111; color: #fff; border-color: #111; }
+.da-filter-btn.orange.active { background: #C2580F; color: #fff; border-color: transparent; }
+.da-filter-btn.green.active  { background: #22c55e; color: #fff; border-color: transparent; }
+.da-filter-btn.red.active    { background: #dc2626; color: #fff; border-color: transparent; }
+
+/* Loading */
+.da-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 56px;
+}
+
+.da-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #E5E7EB;
+  border-top-color: #C2580F;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Cards */
+.da-list { display: flex; flex-direction: column; gap: 10px; }
+
+.da-card {
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: box-shadow 0.18s ease;
+}
+
+.da-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.da-card-left  { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.da-card-mid   { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+.da-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+.da-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #FDEBD0;
+  color: #C2580F;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.da-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.da-name  { font-size: 14px; font-weight: 800; color: #111; }
+.da-email { font-size: 12px; color: #888; }
+.da-phone { font-size: 11px; color: #aaa; }
+
+.da-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  width: fit-content;
+}
+
+.da-role-badge.rh  { background: #eff6ff; color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
+.da-role-badge.enc { background: #FDEBD0; color: #C2580F; border: 1px solid #C2580F; }
+
+.da-details { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: #666; }
+.da-date    { font-size: 11px; color: #aaa; }
+
+/* Statut */
+.da-statut {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.da-statut.wait { background: #FDEBD0; color: #C2580F; border: 1px solid #C2580F; }
+.da-statut.ok   { background: #dcfce7; color: #16a34a; border: 1px solid rgba(34,197,94,0.25); }
+.da-statut.no   { background: #fee2e2; color: #b91c1c; border: 1px solid rgba(220,38,38,0.25); }
+
+.da-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  display: block;
+}
+
+.da-statut.wait .da-dot { animation: pulse 2s ease infinite; }
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .3; transform: scale(.6); }
+}
+
+/* Actions */
+.da-actions { display: flex; gap: 6px; }
+
+.da-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.da-btn svg { stroke: currentColor; fill: none; }
+
+.da-btn.green { background: #dcfce7; color: #16a34a; }
+.da-btn.green:hover:not(:disabled) { background: #22c55e; color: #fff; }
+
+.da-btn.red { background: #fee2e2; color: #b91c1c; }
+.da-btn.red:hover:not(:disabled) { background: #dc2626; color: #fff; }
+
+.da-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Empty */
+.da-empty { text-align: center; padding: 56px; }
+.da-empty-title { font-size: 16px; font-weight: 800; color: #444; margin: 0 0 6px; }
+.da-empty-sub   { font-size: 13px; color: #888; margin: 0; }

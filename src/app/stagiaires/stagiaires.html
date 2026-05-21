@@ -1,0 +1,464 @@
+<div class="stag-page">
+  <div class="stag-wrap">
+
+    <section class="stag-header">
+      <div class="stag-header-left">
+        <h1 class="stag-title">
+          Gestion des <span class="accent">Stagiaires</span>
+        </h1>
+        <p class="stag-subtitle">
+          Suivez les stagiaires acceptés et gérez leur dossier de stage.
+        </p>
+      </div>
+      <div class="stag-stats">
+        <div class="stag-stat">
+          <span class="stag-stat-value">{{ stagiaires.length }}</span>
+          <span class="stag-stat-label">Total</span>
+        </div>
+        <div class="stag-stat green">
+          <span class="stag-stat-value">{{ enCours }}</span>
+          <span class="stag-stat-label">En cours</span>
+        </div>
+        <div class="stag-stat gray">
+          <span class="stag-stat-value">{{ termines }}</span>
+          <span class="stag-stat-label">Terminés</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="stag-loading" *ngIf="loading">
+      <div class="stag-spinner"></div>
+      <p>Chargement des stagiaires…</p>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- ✅ TOOLBAR : recherche + toggle vue -->
+      <div class="stag-toolbar">
+        <div class="stag-search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            class="stag-search-input"
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par nom, email, sujet…"/>
+          <button class="stag-search-clear" *ngIf="searchQuery" (click)="searchQuery = ''">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="stag-search-result" *ngIf="searchQuery">
+          {{ stagiairesFiltres.length }} résultat(s)
+        </span>
+
+        <!-- ✅ Toggle vue -->
+        <div class="stag-view-toggle">
+          <button class="stag-view-btn" [class.active]="isCardsView()" (click)="setView('cards')" title="Vue cartes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </button>
+          <button class="stag-view-btn" [class.active]="isTableView()" (click)="setView('table')" title="Vue tableau">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ Empty state -->
+      <div class="stag-empty" *ngIf="stagiairesFiltres.length === 0">
+        <div class="stag-empty-ico">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p class="stag-empty-title">
+          {{ searchQuery ? 'Aucun résultat' : 'Aucun stagiaire' }}
+        </p>
+        <p class="stag-empty-sub">
+          {{ searchQuery ? 'Essayez un autre terme.' : 'Les candidatures acceptées apparaîtront ici.' }}
+        </p>
+      </div>
+
+      <!-- ✅ VUE CARTES -->
+      <div class="stag-grid" *ngIf="isCardsView() && stagiairesFiltres.length > 0">
+        <div
+          class="stag-card"
+          *ngFor="let s of stagiairesFiltres; trackBy: trackByStagiaireId"
+          (click)="voirDetail(s)"
+          [class.termine]="s.statusStage === 'TERMINE'"
+        >
+          <div class="stag-card-header">
+            <div class="stag-card-avatar" [style.background]="getAvatarColor(getNomStagiaire(s))">
+              {{ getInitials(getNomStagiaire(s)) }}
+            </div>
+            <div class="stag-card-identity">
+              <span class="stag-card-name">{{ getNomStagiaire(s) }}</span>
+              <span class="stag-card-email">{{ s.utilisateur?.email || '—' }}</span>
+            </div>
+            <span class="stag-card-status"
+                  [class.en-cours]="s.statusStage === 'EN_COURS'"
+                  [class.termine]="s.statusStage === 'TERMINE'">
+              <i class="stag-status-dot"></i>
+              {{ s.statusStage === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+            </span>
+          </div>
+
+          <div class="stag-card-divider"></div>
+
+          <div class="stag-card-sujet">
+            <div class="stag-card-sujet-ico">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="#C2580F" stroke-width="2.2" stroke-linecap="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+              </svg>
+            </div>
+            <span class="stag-card-sujet-titre">{{ s.sujet?.titre || '—' }}</span>
+          </div>
+
+          <div class="stag-card-tags">
+            <span class="stag-tag blue" *ngIf="getNomChamp(s.sujet?.filiereCible)">
+              {{ getNomChamp(s.sujet?.filiereCible) }}
+            </span>
+            <span class="stag-tag gray" *ngIf="getNomChamp(s.sujet?.cycleCible)">
+              {{ getNomChamp(s.sujet?.cycleCible) }}
+            </span>
+          </div>
+
+          <div class="stag-progress-wrap">
+            <div class="stag-progress-top">
+              <span class="stag-progress-label">Progression</span>
+              <span class="stag-progress-state">{{ getProgressLabel(s) }}</span>
+            </div>
+            <div class="stag-progress-bar">
+              <div class="stag-progress-fill"
+                   [class.done]="s.statusStage === 'TERMINE'"
+                   [style.width]="getProgressWidth(s)"></div>
+            </div>
+          </div>
+
+          <div class="stag-card-meta">
+            <div class="stag-card-meta-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="#888" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ formatDate(s.dateDebut) }}</span>
+            </div>
+            <div class="stag-card-meta-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="#888" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>{{ getDuree(s.dateDebut) }}</span>
+            </div>
+            <div class="stag-card-meta-item" [class.no-enc]="!s.encadrant">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="#888" stroke-width="2" stroke-linecap="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>{{ getNomEncadrant(s) }}</span>
+            </div>
+          </div>
+
+          <div class="stag-card-footer" (click)="$event.stopPropagation()">
+            <button class="stag-card-btn view" (click)="voirDetail(s)">
+              Voir dossier
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+            <button class="stag-card-btn end"
+                    *ngIf="s.statusStage === 'EN_COURS'"
+                    (click)="terminer(s)"
+                    [disabled]="terminatingId === s.id">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {{ terminatingId === s.id ? 'En cours…' : 'Terminer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ VUE TABLEAU -->
+      <div class="stag-table-wrap" *ngIf="isTableView() && stagiairesFiltres.length > 0">
+        <div class="stag-thead">
+          <div class="stag-th">Stagiaire</div>
+          <div class="stag-th">Sujet</div>
+          <div class="stag-th">Filière / Cycle</div>
+          <div class="stag-th">Encadrant</div>
+          <div class="stag-th">Début</div>
+          <div class="stag-th">Statut</div>
+          <div class="stag-th">Actions</div>
+        </div>
+
+        <div class="stag-tbody">
+          <div class="stag-trow"
+               *ngFor="let s of stagiairesFiltres; trackBy: trackByStagiaireId"
+               [class.termine]="s.statusStage === 'TERMINE'">
+
+            <div class="stag-td stag-td-main">
+              <div class="stag-t-avatar" [style.background]="getAvatarColor(getNomStagiaire(s))">
+                {{ getInitials(getNomStagiaire(s)) }}
+              </div>
+              <div>
+                <div class="stag-t-name">{{ getNomStagiaire(s) }}</div>
+                <div class="stag-t-email">{{ s.utilisateur?.email || '—' }}</div>
+              </div>
+            </div>
+
+            <div class="stag-td">
+              <span class="stag-t-sujet">{{ s.sujet?.titre || '—' }}</span>
+            </div>
+
+            <div class="stag-td">
+              <div class="stag-t-tags">
+                <span class="stag-tag blue" *ngIf="getNomChamp(s.sujet?.filiereCible)">
+                  {{ getNomChamp(s.sujet?.filiereCible) }}
+                </span>
+                <span class="stag-tag gray" *ngIf="getNomChamp(s.sujet?.cycleCible)">
+                  {{ getNomChamp(s.sujet?.cycleCible) }}
+                </span>
+                <span *ngIf="!getNomChamp(s.sujet?.filiereCible) && !getNomChamp(s.sujet?.cycleCible)">—</span>
+              </div>
+            </div>
+
+            <div class="stag-td">
+              <span class="stag-t-enc" [class.no-enc]="!s.encadrant">
+                {{ getNomEncadrant(s) }}
+              </span>
+            </div>
+
+            <div class="stag-td">
+              <span class="stag-t-date">{{ formatDate(s.dateDebut) }}</span>
+            </div>
+
+            <div class="stag-td">
+              <span class="stag-card-status"
+                    [class.en-cours]="s.statusStage === 'EN_COURS'"
+                    [class.termine]="s.statusStage === 'TERMINE'">
+                <i class="stag-status-dot"></i>
+                {{ s.statusStage === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+              </span>
+            </div>
+
+            <div class="stag-td stag-td-actions">
+              <button class="stag-card-btn view" (click)="voirDetail(s)">
+                Dossier
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+              <button class="stag-card-btn end"
+                      *ngIf="s.statusStage === 'EN_COURS'"
+                      (click)="terminer(s)"
+                      [disabled]="terminatingId === s.id">
+                {{ terminatingId === s.id ? '…' : 'Terminer' }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="stag-tfoot">
+          <span><strong>{{ stagiairesFiltres.length }}</strong> stagiaire(s)</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — identique, inchangée -->
+<div class="stag-modal-backdrop" *ngIf="selectedStagiaire" (click)="fermerDetail()">
+  <div class="stag-modal" (click)="$event.stopPropagation()">
+
+    <div class="stag-modal-header">
+      <div class="stag-modal-top">
+        <div class="stag-modal-badge">Dossier stagiaire</div>
+        <button class="stag-modal-close" (click)="fermerDetail()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="#888" stroke-width="3" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="stag-modal-profile">
+        <div class="stag-modal-avatar"
+             [style.background]="getAvatarColor(getNomStagiaire(selectedStagiaire))">
+          {{ getInitials(getNomStagiaire(selectedStagiaire)) }}
+        </div>
+        <div class="stag-modal-identity">
+          <h2>{{ getNomStagiaire(selectedStagiaire) }}</h2>
+          <p>{{ selectedStagiaire.utilisateur?.email || '—' }}</p>
+        </div>
+        <span class="stag-card-status"
+              [class.en-cours]="selectedStagiaire.statusStage === 'EN_COURS'"
+              [class.termine]="selectedStagiaire.statusStage === 'TERMINE'">
+          <i class="stag-status-dot"></i>
+          {{ selectedStagiaire.statusStage === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="stag-modal-body">
+      <div class="stag-modal-grid">
+
+        <div class="stag-box stag-box-wide">
+          <div class="stag-box-title">Sujet de stage</div>
+          <div class="stag-subject-card">
+            <div class="stag-subject-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="#C2580F" stroke-width="2.2" stroke-linecap="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+              </svg>
+            </div>
+            <div class="stag-subject-content">
+              <h3>{{ selectedStagiaire.sujet?.titre || '—' }}</h3>
+              <div class="stag-card-tags no-pad">
+                <span class="stag-tag blue" *ngIf="getNomChamp(selectedStagiaire.sujet?.filiereCible)">
+                  {{ getNomChamp(selectedStagiaire.sujet?.filiereCible) }}
+                </span>
+                <span class="stag-tag gray" *ngIf="getNomChamp(selectedStagiaire.sujet?.cycleCible)">
+                  {{ getNomChamp(selectedStagiaire.sujet?.cycleCible) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stag-box">
+          <div class="stag-box-title">Filière</div>
+          <div class="stag-box-value">{{ selectedStagiaire.utilisateur?.filiere?.nom || '—' }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Cycle</div>
+          <div class="stag-box-value">{{ selectedStagiaire.utilisateur?.cycle?.nom || '—' }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Établissement</div>
+          <div class="stag-box-value">{{ selectedStagiaire.utilisateur?.etablissement || '—' }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Téléphone</div>
+          <div class="stag-box-value">{{ selectedStagiaire.utilisateur?.telephone || '—' }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Début</div>
+          <div class="stag-box-value">{{ formatDate(selectedStagiaire.dateDebut) }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Fin</div>
+          <div class="stag-box-value">{{ formatDate(selectedStagiaire.dateFin) }}</div>
+        </div>
+        <div class="stag-box">
+          <div class="stag-box-title">Durée</div>
+          <div class="stag-box-value">{{ getDuree(selectedStagiaire.dateDebut) }}</div>
+        </div>
+
+        <div class="stag-box">
+          <div class="stag-box-title">Encadrant</div>
+          <div *ngIf="selectedStagiaire.encadrant" class="stag-box-value" style="margin-bottom:10px">
+            {{ getNomEncadrant(selectedStagiaire) }}
+          </div>
+          <div class="stag-affectation-row">
+            <div class="stag-custom-select" (click)="$event.stopPropagation()">
+              <button type="button" class="stag-custom-select-trigger"
+                      [class.open]="encadrantDropdownOpen"
+                      (click)="toggleEncadrantDropdown($event)">
+                <span class="stag-custom-select-text" [class.placeholder]="!selectedEncadrantId">
+                  {{ selectedEncadrantName }}
+                </span>
+                <span class="stag-custom-select-arrow" [class.open]="encadrantDropdownOpen"></span>
+              </button>
+              <div class="stag-custom-options" *ngIf="encadrantDropdownOpen">
+                <button type="button" class="stag-custom-option"
+                        *ngFor="let e of encadrants"
+                        [class.selected]="isEncadrantSelected(e.id)"
+                        (click)="choisirEncadrant(e, $event)">
+                  <span class="stag-custom-option-name">{{ getNomEncadrantObj(e) }}</span>
+                  <svg *ngIf="isEncadrantSelected(e.id)" width="14" height="14"
+                       viewBox="0 0 24 24" fill="none" stroke="#C2580F"
+                       stroke-width="3" stroke-linecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+                <div class="stag-custom-empty" *ngIf="encadrants.length === 0">
+                  Aucun encadrant disponible
+                </div>
+              </div>
+            </div>
+            <button class="stag-modal-btn orange" (click)="affecterEncadrant()"
+                    [disabled]="!selectedEncadrantId || affectationLoading">
+              {{ affectationLoading ? 'Affectation…' : 'Affecter' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="stag-box stag-box-wide">
+          <div class="stag-box-title">Progression du stage</div>
+          <div class="stag-progress-card">
+            <div class="stag-progress-top">
+              <span class="stag-progress-label">Avancement</span>
+              <span class="stag-progress-state">{{ getProgressLabel(selectedStagiaire) }}</span>
+            </div>
+            <div class="stag-progress-bar large">
+              <div class="stag-progress-fill"
+                   [class.done]="selectedStagiaire.statusStage === 'TERMINE'"
+                   [style.width]="getProgressWidth(selectedStagiaire)"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="stag-modal-footer">
+      <button class="stag-modal-btn light" (click)="fermerDetail()">Fermer</button>
+      <button class="stag-modal-btn green"
+              *ngIf="selectedStagiaire.statusStage === 'EN_COURS'"
+              (click)="terminer(selectedStagiaire)"
+              [disabled]="terminatingId === selectedStagiaire.id">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="white" stroke-width="2.8" stroke-linecap="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ terminatingId === selectedStagiaire.id ? 'En cours…' : 'Terminer le stage' }}
+      </button>
+    </div>
+
+  </div>
+</div>

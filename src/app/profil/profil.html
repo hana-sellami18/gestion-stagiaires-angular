@@ -1,0 +1,111 @@
+<div class="pf">
+
+  <!-- HEADER CARTE -->
+  <div class="pf-hero">
+    <div class="pf-hero-left">
+      <div class="pf-av-wrap">
+        <label class="pf-av" title="Changer la photo">
+          <img *ngIf="avatarPreview" [src]="avatarPreview" alt="Photo"/>
+          <span *ngIf="!avatarPreview">{{ initiales }}</span>
+          <div class="pf-av-overlay">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <input type="file" style="display:none" accept="image/*" (change)="onAvatarChange($event)"/>
+        </label>
+        <div class="pf-av-status"></div>
+      </div>
+      <div class="pf-hero-info">
+        <h1 class="pf-hero-name">{{ profil.nomComplet }}</h1>
+
+      </div>
+    </div>
+    <button class="pf-btn-edit" (click)="toggleEdit()" *ngIf="!editMode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Modifier le profil
+    </button>
+  </div>
+
+  <!-- INFOS — mode lecture -->
+  <div class="pf-card" *ngIf="!editMode">
+    <div class="pf-card-head">
+      <span class="pf-card-title">Informations personnelles</span>
+    </div>
+    <div class="pf-rows">
+
+      <div class="pf-row">
+        <div class="pf-row-ico">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="pf-row-body">
+          <span class="pf-row-lbl">Nom complet</span>
+          <span class="pf-row-val">{{ profil.nomComplet }}</span>
+        </div>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-row-ico">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="pf-row-body">
+          <span class="pf-row-lbl">Adresse email</span>
+          <span class="pf-row-val">{{ profil.email }}</span>
+        </div>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-row-ico">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.01 1.12 2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8a16 16 0 006.29 6.29l1.14-1.14a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div class="pf-row-body">
+          <span class="pf-row-lbl">Téléphone</span>
+          <span class="pf-row-val">{{ profil.telephone || '—' }}</span>
+        </div>
+      </div>
+
+      <div class="pf-row" style="border-bottom:none">
+        <div class="pf-row-ico">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        </div>
+        <div class="pf-row-body">
+          <span class="pf-row-lbl">Rôle</span>
+          <span class="pf-row-val">{{ profil.role.replace("ROLE_", "") }}</span>        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EDIT MODE -->
+  <div class="pf-card" *ngIf="editMode">
+    <div class="pf-card-head">
+      <span class="pf-card-title">Modifier le profil</span>
+    </div>
+    <div class="pf-edit-body">
+      <div class="pf-edit-grid">
+        <div class="pf-ef">
+          <label class="pf-el">Nom complet</label>
+          <input class="pf-ei" [(ngModel)]="editData.nomComplet" placeholder="Nom complet"/>
+        </div>
+        <div class="pf-ef">
+          <label class="pf-el">Adresse email</label>
+          <input class="pf-ei" type="email" [(ngModel)]="editData.email" placeholder="Email"/>
+        </div>
+        <div class="pf-ef">
+          <label class="pf-el">Téléphone</label>
+          <input class="pf-ei" [(ngModel)]="editData.telephone" placeholder="+216 XX XXX XXX"/>
+        </div>
+        <div class="pf-ef">
+          <label class="pf-el">Rôle</label>
+          <input class="pf-ei" [(ngModel)]="editData.role" placeholder="Rôle"/>
+        </div>
+      </div>
+    </div>
+    <div class="pf-edit-foot">
+      <button class="pf-btn-cancel" (click)="cancelEdit()">Annuler</button>
+      <button class="pf-btn-save" (click)="saveEdit()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+
+</div>

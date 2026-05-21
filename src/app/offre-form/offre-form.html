@@ -1,0 +1,274 @@
+<div class="sf-wrapper">
+  <div class="sf-form">
+
+    <!-- ── HEADER ── -->
+    <div class="sf-header">
+      <div class="sf-header-left">
+        <div class="sf-header-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          </svg>
+        </div>
+        <div class="sf-header-info">
+          <div class="sf-header-badge">
+            <span class="sf-pulse"></span>
+            {{ editMode ? 'Édition' : 'Nouvelle offre' }}
+          </div>
+          <h1 class="sf-header-title">
+            {{ editMode ? "Modifier l'offre" : "Publier une offre de stage" }}
+          </h1>
+          <p class="sf-header-sub">ASM Stage Manager · Espace RH</p>
+        </div>
+      </div>
+      <button type="button" class="sf-close-btn" (click)="annuler.emit()" title="Fermer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── STEPS ── -->
+    <div class="sf-steps">
+      <div class="sf-step active">
+        <span class="sf-step-num">01</span>
+        <span class="sf-step-label">Informations</span>
+      </div>
+      <div class="sf-step-line"></div>
+      <div class="sf-step active">
+        <span class="sf-step-num">02</span>
+        <span class="sf-step-label">Description</span>
+      </div>
+      <div class="sf-step-line"></div>
+      <div class="sf-step active">
+        <span class="sf-step-num">03</span>
+        <span class="sf-step-label">Compétences</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form">
+
+      <!-- ── BLOC 01 — Informations générales ── -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-num">01</div>
+          <div class="sf-card-meta">
+            <span class="sf-card-title">Informations générales</span>
+            <span class="sf-card-sub">Titre, filière, cycle et statut</span>
+          </div>
+          <div class="sf-card-ico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sf-card-body">
+
+          <!-- Titre -->
+          <div class="sf-field sf-field--full">
+            <label class="sf-label">Titre du stage <span class="sf-req">*</span></label>
+            <div class="sf-input-wrap">
+              <span class="sf-ico">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </span>
+              <input type="text" class="sf-input" formControlName="titre"
+                     placeholder="Ex : Développeur Angular, Data Analyst…"/>
+            </div>
+            <div class="sf-error" *ngIf="isInvalid('titre')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Le titre est requis
+            </div>
+          </div>
+
+          <!-- Filière + Cycle -->
+          <div class="sf-row">
+            <div class="sf-field">
+              <label class="sf-label">Filière cible <span class="sf-req">*</span></label>
+              <div class="sf-select-wrap">
+                <select class="sf-select" formControlName="filiereId">
+                  <option [value]="null" disabled>Choisir une filière</option>
+                  <option *ngFor="let f of filieres" [value]="f.id">{{ f.nom }}</option>
+                </select>
+              </div>
+              <div class="sf-error" *ngIf="isInvalid('filiereId')">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                La filière est requise
+              </div>
+            </div>
+            <div class="sf-field">
+              <label class="sf-label">Cycle cible <span class="sf-req">*</span></label>
+              <div class="sf-select-wrap">
+                <select class="sf-select" formControlName="cycleId">
+                  <option [value]="null" disabled>Choisir un cycle</option>
+                  <option *ngFor="let c of cycles" [value]="c.id">{{ c.nom }}</option>
+                </select>
+              </div>
+              <div class="sf-error" *ngIf="isInvalid('cycleId')">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Le cycle est requis
+              </div>
+            </div>
+          </div>
+
+          <!-- Statut + Disponibilité -->
+          <div class="sf-row">
+            <div class="sf-field">
+              <label class="sf-label">Statut</label>
+              <div class="sf-select-wrap">
+                <select class="sf-select" formControlName="statut">
+                  <option *ngFor="let s of statutOptions" [value]="s">{{ s }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="sf-field">
+              <label class="sf-label">Disponibilité</label>
+              <label class="sf-toggle">
+                <input type="checkbox" formControlName="estDisponible"/>
+                <div class="sf-toggle-track">
+                  <div class="sf-toggle-thumb"></div>
+                </div>
+                <span class="sf-toggle-label">
+                  {{ form.get('estDisponible')?.value ? 'Ouverte aux candidatures' : 'Offre fermée' }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── BLOC 02 — Description ── -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-num">02</div>
+          <div class="sf-card-meta">
+            <span class="sf-card-title">Description des missions</span>
+            <span class="sf-card-sub">Missions, objectifs et contexte</span>
+          </div>
+          <div class="sf-card-ico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/>
+              <line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sf-card-body">
+          <div class="sf-field sf-field--full">
+            <label class="sf-label">Description <span class="sf-req">*</span></label>
+            <textarea class="sf-textarea" formControlName="description" rows="5"
+                      placeholder="Décrivez les missions, objectifs et contexte du stage…"></textarea>
+            <div class="sf-field-footer">
+              <span class="sf-hint">Soyez précis pour attirer les meilleurs candidats.</span>
+              <span class="sf-char-count">{{ form.get('description')?.value?.length || 0 }} car.</span>
+            </div>
+            <div class="sf-error" *ngIf="isInvalid('description')">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              La description est requise
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOC 03 — Compétences ── -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-num">03</div>
+          <div class="sf-card-meta">
+            <span class="sf-card-title">Compétences requises</span>
+            <span class="sf-card-sub">Technologies et aptitudes attendues</span>
+          </div>
+          <div class="sf-card-ico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="sf-card-body">
+          <div class="sf-field sf-field--full">
+            <label class="sf-label">Ajouter une compétence</label>
+            <div class="sf-skill-row">
+              <div class="sf-input-wrap" style="flex:1">
+                <span class="sf-ico">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input type="text" class="sf-input"
+                       [(ngModel)]="newSkill" [ngModelOptions]="{standalone: true}"
+                       placeholder="Ex : Angular, Python, AutoCAD…"
+                       (keydown)="onSkillKeydown($event)"/>
+              </div>
+              <button type="button" class="sf-add-btn" (click)="addSkill()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Ajouter
+              </button>
+            </div>
+
+            <div class="sf-chips" *ngIf="competences.length > 0">
+              <span class="sf-chip" *ngFor="let s of competences; let i = index"
+                    [style.animation-delay]="(i * 0.05) + 's'">
+                {{ s }}
+                <button type="button" class="sf-chip-remove" (click)="removeSkill(s)">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="sf-empty" *ngIf="competences.length === 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Tapez une compétence puis Entrée ou cliquez Ajouter
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- ── FOOTER ── -->
+    <div class="sf-footer">
+      <div class="sf-footer-info">
+        <span class="sf-footer-dot" [class.active]="!form.invalid"></span>
+        <span class="sf-footer-text">{{ form.invalid ? 'Formulaire incomplet' : 'Prêt à publier' }}</span>
+      </div>
+      <div class="sf-footer-actions">
+        <button type="button" class="sf-btn sf-btn--ghost" (click)="annuler.emit()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Annuler
+        </button>
+        <button type="button" class="sf-btn sf-btn--primary"
+                [disabled]="form.invalid"
+                (click)="onSubmit()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ editMode ? 'Enregistrer' : 'Publier maintenant' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
