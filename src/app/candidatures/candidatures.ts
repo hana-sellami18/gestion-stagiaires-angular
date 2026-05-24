@@ -3,7 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CandidatureService, Candidature } from '../services/candidature';
 
-type FilterStatut = 'TOUS' | 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSEE' | 'EN_ENTRETIEN' | 'VALIDEE_ENCADRANT' | 'REFUSEE_ENCADRANT';
+type FilterStatut = 'TOUS' | 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSEE' | 'EN_ENTRETIEN' | 'ENTRETIEN_REALISE';
 
 @Component({
 selector: 'app-candidatures',
@@ -275,7 +275,7 @@ get cand(): Candidature {
   getCvUrl(cvPath: string): string {
     if (!cvPath) return '';
     const path = cvPath.startsWith('uploads/') ? cvPath : `uploads/${cvPath}`;
-    return `http://localhost:8085/${path}`;
+    return `http://localhost:8089/${path}`;
   }
 
   ouvrirCv(cvPath: string): void {

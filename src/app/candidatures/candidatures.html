@@ -86,8 +86,8 @@
         >
           <div class="cand-row-accent"
                [class.orange]="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN'"
-               [class.green]="c.statut === 'ACCEPTE' || c.statut === 'VALIDEE_ENCADRANT'"
-               [class.red]="c.statut === 'REFUSEE' || c.statut === 'REFUSEE_ENCADRANT'">
+               [class.green]="c.statut === 'ACCEPTE' || c.statut === 'ENTRETIEN_REALISE'"
+               [class.red]="c.statut === 'REFUSEE'">
           </div>
 
           <div class="cand-row-arrow">
@@ -144,20 +144,19 @@
           <div class="cand-td cand-td-status">
             <span class="cand-status"
                   [class.wait]="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN'"
-                  [class.ok]="c.statut === 'ACCEPTE' || c.statut === 'VALIDEE_ENCADRANT'"
-                  [class.no]="c.statut === 'REFUSEE' || c.statut === 'REFUSEE_ENCADRANT'">
+                  [class.ok]="c.statut === 'ACCEPTE' || c.statut === 'ENTRETIEN_REALISE'"
+                  [class.no]="c.statut === 'REFUSEE'">
               <i class="cand-status-dot"></i>
               {{ c.statut === 'EN_ATTENTE' ? 'En attente'
                : c.statut === 'EN_ENTRETIEN' ? 'En entretien'
-               : c.statut === 'VALIDEE_ENCADRANT' ? 'Entretien réalisé'
-               : c.statut === 'REFUSEE_ENCADRANT' ? 'Refusé encadrant'
+               : c.statut === 'ENTRETIEN_REALISE' ? 'Entretien réalisé'
                : c.statut === 'ACCEPTE' ? 'Acceptée' : 'Refusée' }}
             </span>
           </div>
 
           <div class="cand-td cand-td-actions" (click)="$event.stopPropagation()">
             <button class="cand-act green" title="Accepter"
-                    *ngIf="c.statut === 'VALIDEE_ENCADRANT'"
+                    *ngIf="c.statut === 'ENTRETIEN_REALISE'"
                     (click)="accepter(c, $event)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
                 <polyline points="20 6 9 17 4 12"/>
@@ -165,7 +164,7 @@
             </button>
 
             <button class="cand-act red" title="Refuser"
-                    *ngIf="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN' || c.statut === 'VALIDEE_ENCADRANT'"
+                    *ngIf="c.statut === 'EN_ATTENTE' || c.statut === 'EN_ENTRETIEN' || c.statut === 'ENTRETIEN_REALISE'"
                     (click)="refuser(c, $event)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -243,16 +242,14 @@
           <h2>{{ getNomStagiaire(cand.stagiaire) }}</h2>
           <span>{{ cand.stagiaire?.email }}</span>
         </div>
-        <!-- ✅ Badge statut corrigé -->
         <span class="cand-status"
               [class.wait]="cand.statut === 'EN_ATTENTE' || cand.statut === 'EN_ENTRETIEN'"
-              [class.ok]="cand.statut === 'ACCEPTE' || cand.statut === 'VALIDEE_ENCADRANT'"
-              [class.no]="cand.statut === 'REFUSEE' || cand.statut === 'REFUSEE_ENCADRANT'">
+              [class.ok]="cand.statut === 'ACCEPTE' || cand.statut === 'ENTRETIEN_REALISE'"
+              [class.no]="cand.statut === 'REFUSEE'">
           <i class="cand-status-dot"></i>
           {{ cand.statut === 'EN_ATTENTE' ? 'En attente'
            : cand.statut === 'EN_ENTRETIEN' ? 'En entretien'
-           : cand.statut === 'VALIDEE_ENCADRANT' ? 'Validé encadrant'
-           : cand.statut === 'REFUSEE_ENCADRANT' ? 'Refusé encadrant'
+           : cand.statut === 'ENTRETIEN_REALISE' ? 'Entretien réalisé'
            : cand.statut === 'ACCEPTE' ? 'Acceptée' : 'Refusée' }}
         </span>
       </div>
@@ -406,7 +403,7 @@
             </div>
           </div>
 
-        </div><!-- ✅ Fermeture cand-modal-box-wide Analyse IA -->
+        </div>
 
         <!-- Score IA simple si pas d'analyseIA -->
         <div class="cand-modal-box" *ngIf="!cand.analyseIA">
@@ -473,7 +470,7 @@
       </div>
     </div>
 
-    <!-- ✅ Footer corrigé selon le workflow -->
+    <!-- Footer modal -->
     <div class="cand-modal-footer">
 
       <!-- EN_ATTENTE : Entretien + Refuser -->
@@ -517,8 +514,8 @@
         </button>
       </ng-container>
 
-      <!-- VALIDEE_ENCADRANT : Accepter + Refuser -->
-      <ng-container *ngIf="cand.statut === 'VALIDEE_ENCADRANT'">
+      <!-- ENTRETIEN_REALISE : Accepter + Refuser -->
+      <ng-container *ngIf="cand.statut === 'ENTRETIEN_REALISE'">
         <span class="cand-status ok">
           <i class="cand-status-dot"></i>
           Entretien réalisé
@@ -553,8 +550,6 @@
         <i class="cand-status-dot"></i>
         Dossier refusé
       </span>
-
-
 
       <button class="cand-panel-btn"
               style="margin-left:auto; background:#f8fafc; color:#444444; border:1px solid #e5e5e5;"

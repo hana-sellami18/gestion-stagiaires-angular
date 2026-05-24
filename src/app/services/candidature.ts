@@ -38,7 +38,7 @@ id:                    number;
 stagiaire?:            Stagiaire;
 encadrant?:            Stagiaire;
 sujet?:                SujetStage;
-statut:                'EN_ATTENTE' | 'ACCEPTE' | 'REFUSEE' | 'EN_ENTRETIEN' | 'VALIDEE_ENCADRANT' | 'REFUSEE_ENCADRANT';
+statut:                 'EN_ATTENTE' | 'ACCEPTE' | 'REFUSEE' | 'EN_ENTRETIEN' | 'ENTRETIEN_REALISE';
 dateDepot?:            string | Date;
 dateEntretien?:        string | Date;
 cvPath?:               string;
