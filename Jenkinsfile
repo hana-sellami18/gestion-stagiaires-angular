@@ -1,81 +1,35 @@
 pipeline {
     agent any
-
     environment {
-        IMAGE_NAME = 'asm-frontend'
-        IMAGE_TAG  = '1.0'
-        CONTAINER_NAME = 'asm-frontend'
+        VM_HOST = '192.168.56.103'
+        VM_USER = 'asm'
     }
-
     stages {
-
-        stage('Checkout') {
+        stage('Deploy Frontend to VM') {
             steps {
-                echo '>>> Récupération du code Angular depuis GitHub'
-                checkout scm
+                withCredentials([sshUserPrivateKey(credentialsId: 'vm-asm-ssh', keyFileVariable: 'SSH_KEY')]) {
+                    bat """
+                        icacls "%SSH_KEY%" /inheritance:r
+                        icacls "%SSH_KEY%" /grant:r SYSTEM:F
+                        ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no ${VM_USER}@${VM_HOST} "cd ~/gestion-stagiaires-angular && git pull && cd ~ && docker-compose up -d --build frontend"
+                    """
+                }
             }
         }
-
-        stage('Verify Files') {
+        stage('Verify') {
             steps {
-                echo '>>> Vérification des fichiers essentiels'
-                sh 'ls -la'
-                sh 'cat package.json | head -20'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo '>>> Construction de l\'image Docker Angular (Node + Nginx)'
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
-            }
-        }
-
-        stage('Verify Image') {
-            steps {
-                echo '>>> Vérification de l\'image construite'
-                sh 'docker images ${IMAGE_NAME}:${IMAGE_TAG}'
-            }
-        }
-
-        stage('Stop Old Container') {
-            steps {
-                echo '>>> Arrêt de l\'ancien conteneur frontend (si existant)'
-                sh 'docker stop ${CONTAINER_NAME} || true'
-                sh 'docker rm ${CONTAINER_NAME} || true'
-            }
-        }
-
-        stage('Deploy New Container') {
-            steps {
-                echo '>>> Démarrage du nouveau conteneur frontend'
-                sh '''
-                    docker run -d \
-                        --name ${CONTAINER_NAME} \
-                        --network asm-network \
-                        -p 4200:80 \
-                        --restart unless-stopped \
-                        ${IMAGE_NAME}:${IMAGE_TAG}
-                '''
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                echo '>>> Vérification que le conteneur tourne'
-                sh 'sleep 5'
-                sh 'docker ps | grep ${CONTAINER_NAME}'
+                withCredentials([sshUserPrivateKey(credentialsId: 'vm-asm-ssh', keyFileVariable: 'SSH_KEY')]) {
+                    bat """
+                        icacls "%SSH_KEY%" /inheritance:r
+                        icacls "%SSH_KEY%" /grant:r SYSTEM:F
+                        ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no ${VM_USER}@${VM_HOST} "docker ps"
+                    """
+                }
             }
         }
     }
-
     post {
-        success {
-            echo '✅ Pipeline frontend terminée avec succès !'
-            echo '🌐 Application disponible sur http://localhost:4200'
-        }
-        failure {
-            echo '❌ Pipeline frontend échouée — consulter les logs ci-dessus'
-        }
+        success { echo "Frontend deploye avec succes sur http://${VM_HOST}" }
+        failure { echo "Echec du deploiement frontend" }
     }
 }
